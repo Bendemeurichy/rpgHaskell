@@ -1,6 +1,6 @@
-import VoorbeeldModule (hoi)
+import JsonParser
+import Text.Parsec
+import FileHandler
 
 main :: IO ()
-main = putStrLn hoi
-
-
+main = undefined

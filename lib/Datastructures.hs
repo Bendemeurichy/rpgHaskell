@@ -4,9 +4,11 @@ module Datastructures where
 data JSON
     = Number Int
     | String String
-    | Actions Function
+    | Actions Action
     | Array [JSON]
     | Object [Pair]
+    | Layout [TileLine]
+    | UseTimes UseTimes
     deriving (Show, Eq)
 
 newtype ID = ID String
@@ -14,14 +16,21 @@ newtype ID = ID String
 data Pair = Pair ID JSON
     deriving (Show, Eq)
 
-data UseTimes = Int Int
-    |Unlimited 
+data TileLine = TileLine [Tile]
+    deriving (Show, Eq)
+
+data Tile = Wall | Floor | Start | End deriving (Show, Eq) 
+data UseTimes = Amount Int
+    |Infinite 
     deriving (Show, Eq)
 
 data Function = Function{
-    functionName::String,
-    arguments::[ID]
+    functionName::ID,
+    arguments::[Argument]
 } deriving (Show, Eq)
+
+data Argument = TargetID ID | ArgumentFunction Function
+    deriving (Show, Eq)
 
 data Item = Item{
     id :: ID,
@@ -55,9 +64,10 @@ data Entity = Entity{
 }
 
 data Action = Action{
-    condition::ID->Bool,
+    condition::[Function],
     action::Function
-}
+} deriving (Show, Eq)
 
 data Direction = Up | Down | Left | Right
     deriving (Show, Eq)
+
