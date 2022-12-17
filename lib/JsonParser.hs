@@ -16,10 +16,10 @@ parseString =
   String <$> (char '"' *> many1 (letter <|> space) <* char '"')
 
 parseNumber :: Parser JSON
-parseNumber = Number . read <$> many1 digit
+parseNumber = Number . read <$> many1 digit <* whitespace
 
 parseJSON :: Parser JSON
-parseJSON = whitespace *> parseNumber <|> parseString <|> parseArray <|> parseObject <|> parseActions <|> parseUsetimes <|> parseLayout <|> parseLevel <* whitespace
+parseJSON =parseNumber <|> parseString <|> parseArray <|> parseObject <|> parseActions <|> parseUsetimes <|> parseLayout <|> parseLevel
 
 parseArray :: Parser JSON
 parseArray = Array <$> (char '[' *> whitespace *> sepBy parseJSON (char ',') <* whitespace <* char ']')
@@ -31,26 +31,32 @@ parseObjID :: Parser ID
 parseObjID = ID <$> (whitespace *> many1 letter <* whitespace)
 
 parsePair :: Parser Pair
-parsePair = whitespace *> parseObjID >>= \name -> if name== (ID "layout") then Pair name <$> (whitespace*> char ':' *> parseLayout) else Pair name <$> (char ':' *> whitespace *> parseJSON <* whitespace)
+parsePair = do
+  name <-whitespace >> parseObjID
+  if name == ID "layout" then Pair name <$> (whitespace >> char ':' >> parseLayout)
+    else if name == ID "actions"
+      then Pair name <$> (whitespace >> char ':' >> parseActions)
+    else Pair name <$> (char ':' >> whitespace >> parseJSON <* whitespace)
 
 --functions
+
 parseFunction :: Parser Function
-parseFunction = parseObjID >>= \name -> Function name <$> (char '(' *> sepBy parseArgument (char ',') <* char ')')
+parseFunction = whitespace *> parseObjID >>= \name -> Function name <$> (char '(' *> sepBy parseArgument (char ',') <* char ')' <*whitespace)
 
 parseArgument :: Parser Argument
-parseArgument = parseArgumentFunction <|> parseTargetID
+parseArgument = try parseArgumentFunction <|> parseTargetID
 
 parseArgumentFunction :: Parser Argument
 parseArgumentFunction = ArgumentFunction <$> parseFunction
 
 parseTargetID :: Parser Argument
-parseTargetID = TargetID <$> parseObjID
+parseTargetID = TargetID . ID <$> (whitespace *> many alphaNum <* whitespace)
 
 parseAction :: Parser Action
-parseAction = (char '[' *> sepBy parseFunction (char ',') <* char ']') >>= \conditions -> Action conditions <$> parseFunction
+parseAction = (whitespace *> char '[' *> sepBy parseFunction (char ',') <* char ']' <* whitespace) >>= \conditions -> Action conditions <$> (whitespace *>parseFunction <* whitespace)
 
 parseActions :: Parser JSON
-parseActions = Actions <$> parseAction
+parseActions = Actions <$> (whitespace *> char '{' *> whitespace *> sepBy parseAction (char ',') <* whitespace <* char '}' <* whitespace)
 
 --usetimes
 parseUsetimes :: Parser JSON

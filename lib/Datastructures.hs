@@ -4,7 +4,7 @@ module Datastructures where
 data JSON
     = Number Int
     | String String
-    | Actions Action
+    | Actions [Action]
     | Array [JSON]
     | Object [Pair]
     | Layout [TileLine]
