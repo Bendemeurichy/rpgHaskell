@@ -9,10 +9,12 @@ data JSON
     | Object [Pair]
     | Layout [TileLine]
     | UseTimes UseTimes
+    |Direction Direction
     deriving (Show, Eq)
 
 newtype ID = ID String
     deriving (Show, Eq)
+
 data Pair = Pair ID JSON
     deriving (Show, Eq)
 

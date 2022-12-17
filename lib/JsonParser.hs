@@ -19,7 +19,7 @@ parseNumber :: Parser JSON
 parseNumber = Number . read <$> many1 digit <* whitespace
 
 parseJSON :: Parser JSON
-parseJSON =parseNumber <|> parseString <|> parseArray <|> parseObject <|> parseActions <|> parseUsetimes <|> parseLayout <|> parseLevel
+parseJSON =parseNumber <|> parseString <|> parseArray <|> parseObject <|> parseActions <|> parseLayout <|> parseLevel <|> parseUsetimes
 
 parseArray :: Parser JSON
 parseArray = Array <$> (char '[' *> whitespace *> sepBy parseJSON (char ',') <* whitespace <* char ']')
@@ -35,7 +35,11 @@ parsePair = do
   name <-whitespace >> parseObjID
   if name == ID "layout" then Pair name <$> (whitespace >> char ':' >> parseLayout)
     else if name == ID "actions"
-      then Pair name <$> (whitespace >> char ':' >> parseActions)
+      then Pair name <$> (whitespace >> char ':' >> parseActions) <*whitespace
+    else if name == ID "direction"
+      then Pair name <$> (whitespace >> char ':' >> parseDirection) <*whitespace
+    else if name == ID "useTimes"
+      then Pair name <$> (whitespace >> char ':' >> parseUsetimes) <*whitespace
     else Pair name <$> (char ':' >> whitespace >> parseJSON <* whitespace)
 
 --functions
@@ -60,13 +64,13 @@ parseActions = Actions <$> (whitespace *> char '{' *> whitespace *> sepBy parseA
 
 --usetimes
 parseUsetimes :: Parser JSON
-parseUsetimes = parseAmount <|> parseUnlimited
+parseUsetimes = whitespace *>(parseAmount <|> parseUnlimited) <* whitespace
 
 parseAmount :: Parser JSON
 parseAmount = UseTimes <$> (Amount . read <$> many1 digit)
 
 parseUnlimited :: Parser JSON
-parseUnlimited = UseTimes <$> (string "infinite" *> return Infinite)
+parseUnlimited = UseTimes <$> (whitespace *>( string "infinite" *> return Infinite) <* whitespace)
 
 --layout
 parseLayout :: Parser JSON
@@ -92,3 +96,6 @@ parseEnd = char 'e' *> return End
 
 whitespace :: Parser ()
 whitespace = skipMany (oneOf " \t\n")
+
+parseDirection :: Parser JSON
+parseDirection = Direction <$> (whitespace *> string "up" *> return Up <|> string "down" *> return Down <|> string "left" *> return Datastructures.Left <|> string "right" *> return Datastructures.Right <* whitespace)
