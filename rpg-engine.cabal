@@ -7,7 +7,7 @@ build-type:     Simple
 library
   hs-source-dirs: lib
   build-depends: base >= 4.7 && <5,gloss >= 1.11 && < 1.14,gloss-juicy >=0.2.3, random >= 1.1 && < 1.4, random-shuffle >= 0.0.4, parsec >=3.1.15.1
-  exposed-modules: VoorbeeldModule, Datastructures, ActionHandler, JsonParser, FileHandler
+  exposed-modules:Datastructures, ActionHandler, JsonParser, FileHandler, VisualHandler, GameLogic
 
 executable rpg-engine
   main-is: Main.hs

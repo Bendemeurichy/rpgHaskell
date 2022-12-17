@@ -21,7 +21,7 @@ data Pair = Pair ID JSON
 data TileLine = TileLine [Tile]
     deriving (Show, Eq)
 
-data Tile = Wall | Floor | Start | End deriving (Show, Eq) 
+data Tile = Wall | Floor | Start | End | Empty deriving (Show, Eq) 
 data UseTimes = Amount Int
     |Infinite 
     deriving (Show, Eq)
@@ -73,3 +73,13 @@ data Action = Action{
 data Direction = Up | Down | Left | Right
     deriving (Show, Eq)
 
+data Game = Game{
+    level :: Int,
+    player :: Player,
+    entities :: [Entity],
+    items :: [Item],
+    layout :: [TileLine],
+    status :: Status
+}
+
+data Status = Levelselection | Playing | Won | Lost deriving (Show, Eq)

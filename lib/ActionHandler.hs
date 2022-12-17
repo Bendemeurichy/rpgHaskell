@@ -19,3 +19,4 @@ increasePlayerHp = undefined
 
 decreaseHp::ID -> ID -> Entity
 decreaseHp = undefined
+

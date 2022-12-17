@@ -6,7 +6,6 @@ import qualified Datastructures as Actions
 -- help for parsec: https://jakewheat.github.io/intro_to_parsing/
 
 --basics
---make level parser that parses the whole level = loose pairs
 
 parseLevel :: Parser JSON
 parseLevel = Object <$> (whitespace *> many1 parsePair <* whitespace)
@@ -80,7 +79,7 @@ parseTileLine :: Parser TileLine
 parseTileLine = TileLine <$> (whitespace *> sepBy parseTile (char ' ') <* whitespace)
 
 parseTile :: Parser Tile
-parseTile =parseWall <|> parseFloor <|> parseStart <|> parseEnd
+parseTile =parseWall <|> parseFloor <|> parseStart <|> parseEnd <|> parseEmpty
 
 parseWall :: Parser Tile
 parseWall = char '*' *> return Wall
@@ -94,8 +93,13 @@ parseStart = char 's' *> return Start
 parseEnd :: Parser Tile
 parseEnd = char 'e' *> return End
 
+parseEmpty :: Parser Tile
+parseEmpty = char 'x' *> return Datastructures.Empty
+
+--skip whitespace
 whitespace :: Parser ()
 whitespace = skipMany (oneOf " \t\n")
 
+--direction
 parseDirection :: Parser JSON
 parseDirection = Direction <$> (whitespace *> string "up" *> return Up <|> string "down" *> return Down <|> string "left" *> return Datastructures.Left <|> string "right" *> return Datastructures.Right <* whitespace)

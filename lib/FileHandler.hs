@@ -14,3 +14,5 @@ constructLevel levelname = do
             Prelude.Left err -> error $ show err
             Prelude.Right json -> putStr (show json)
         )
+
+initGame = Game 0 (Player 0 0 50 []) [] [] [] Levelselection
