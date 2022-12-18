@@ -37,7 +37,7 @@ levels: [
                 value: 25,
 
                 actions: {
-                    [not(inventoryFull())] retrieveItem(sword),
+                    [not(inventoryFull())] retrieveItem(insword),
                     [] leave()
                 }
             },

@@ -57,9 +57,15 @@ window :: Display
 window = InWindow "RPG" windowSize windowposition
 
 renderBackground :: Picture
---renderBackground = pictures [scale 500 350 (rotate 180 (translate (- 100) 0 (lookupPicture gameUiMap "background"))),scale 500 350 (translate 100 0 (lookupPicture gameUiMap "background"))]
 renderBackground = pictures [translate (-230.0) 0.0 (scale 20.0 18.0 (lookupPicture gameUiMap "background")), (rotate 180.0 (translate (-230.0) 0.0 (scale 20.0 18.0 (lookupPicture gameUiMap "background"))))]
 
 render :: Game -> Picture
-render game = renderBackground
+render game = pictures [renderBackground,renderplayer]
+
+renderplayer :: Picture
+renderplayer = lookupPicture characterMap "player"
+
+convertx :: Int -> Float
+convertx x = fromIntegral x * 40.0 - 200.0
+
 
