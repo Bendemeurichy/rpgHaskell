@@ -56,16 +56,34 @@ fps = 60
 window :: Display
 window = InWindow "RPG" windowSize windowposition
 
+--constants because background doensn't need to change easily
 renderBackground :: Picture
-renderBackground = pictures [translate (-230.0) 0.0 (scale 20.0 18.0 (lookupPicture gameUiMap "background")), (rotate 180.0 (translate (-230.0) 0.0 (scale 20.0 18.0 (lookupPicture gameUiMap "background"))))]
+renderBackground = pictures [translate (-230.0) 0.0 (scale 20.0 18.0 (lookupPicture gameUiMap "background")), rotate 180.0 (translate (-230.0) 0.0 (scale 20.0 18.0 (lookupPicture gameUiMap "background")))]
 
 render :: Game -> Picture
-render game = pictures [renderBackground,renderplayer]
+render game = pictures [renderBackground,renderLayout (layout (levels game!! currentLevel game)),renderplayer (player game)]
 
-renderplayer :: Picture
-renderplayer = lookupPicture characterMap "player"
+renderplayer :: Player -> Picture
+renderplayer player = translate (convertx (px player)) (converty (py player)) (scale scaleSize scaleSize (lookupPicture characterMap "player"))
+
+renderTile :: Tile -> Picture
+renderTile tile = scale scaleSurface scaleSurface (lookupTile levelMap tile)
+
+renderTileLine :: TileLine -> Int -> Picture
+renderTileLine (TileLine tiles) y = pictures [translate  (convertx i) (converty y) (renderTile (tiles !! i)) | i <- [0..length tiles - 1]]
+
+renderLayout :: [TileLine] -> Picture
+renderLayout layout = pictures [renderTileLine (layout !! y) y  | y <- [(length layout -1),(length layout -2)..0]]
 
 convertx :: Int -> Float
-convertx x = fromIntegral x * 40.0 - 200.0
+convertx x = fromIntegral x * 40.0 
 
+converty :: Int -> Float
+converty y = fromIntegral y * 40.0 -50.0
+
+scaleSurface :: Float
+scaleSurface = 2.0
+
+scaleSize :: Float
+scaleSize = 1.3
 

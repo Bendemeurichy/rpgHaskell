@@ -48,6 +48,9 @@ sndp (Pair _ b) = b
 fstp :: Pair -> ID
 fstp (Pair a _) = a
 
+lengthTileLine :: TileLine -> Int
+lengthTileLine (TileLine a) = length a
+
 data TileLine = TileLine [Tile]
     deriving (Show, Eq)
 
@@ -104,6 +107,7 @@ data Direction = Up | Down | Left | Right
     deriving (Show, Eq)
 
 data Game = Game{
+    player :: Player,
     levels :: [Level],
     currentLevel :: Int,
     status :: Status
@@ -111,7 +115,6 @@ data Game = Game{
 
 data Level = Level{
     level :: Int,
-    player :: Player,
     entities :: [Entity],
     items :: [Item],
     layout :: [TileLine]

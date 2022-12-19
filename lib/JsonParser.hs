@@ -53,7 +53,7 @@ parseArgumentFunction :: Parser Argument
 parseArgumentFunction = ArgumentFunction <$> parseFunction
 
 parseTargetID :: Parser Argument
-parseTargetID = TargetID . ID <$> (whitespace *> many alphaNum <* whitespace)
+parseTargetID = TargetID . ID <$> (whitespace *> many1 alphaNum <* whitespace)
 
 parseAction :: Parser Action
 parseAction = (whitespace *> char '[' *> sepBy parseFunction (char ',') <* char ']' <* whitespace) >>= \conditions -> Action conditions <$> (whitespace *>parseFunction <* whitespace)

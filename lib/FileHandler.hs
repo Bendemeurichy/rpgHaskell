@@ -1,4 +1,3 @@
-{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 module FileHandler where
 
 import Datastructures
@@ -10,6 +9,7 @@ import GHC.IO (unsafePerformIO)
 import Data.Maybe (fromJust, isNothing)
 import GHC.TopHandler (runIO)
 import System.Posix.Internals (withFilePath)
+import HelperFunctions
 
 constructLevel :: String -> IO Game
 constructLevel levelname = do
@@ -19,13 +19,27 @@ constructLevel levelname = do
         json of
             Prelude.Left err -> error $ show err
             Prelude.Right json -> do
-                print json
                 let game = constructGameFromJSON initGame json
                 return game
 
-startGame :: String -> Game
-{-# NOINLINE startGame #-}
-startGame levelname = unsafePerformIO (constructLevel levelname)
+showLevel :: String -> IO ()
+showLevel levelname = do
+  withFile
+    levelname
+    ReadMode
+    ( \handle -> do
+        contents <- hGetContents handle
+        let parsed = parse parseJSON "error" contents
+        case parsed of
+          Prelude.Left err -> error $ show err
+          Prelude.Right json -> putStr (show json)
+    )
+
+startLevel :: String -> Game
+startLevel levelname = changePlayerInGame game (findStart  (layout (levels game!!currentLevel game)))
+    where game =unsafePerformIO (constructLevel levelname)
+
+
 
 findMaybePair :: ID -> [Pair] -> Maybe Pair
 findMaybePair _ [] = Nothing
@@ -35,24 +49,22 @@ findPair :: ID -> [Pair] -> Pair
 findPair id pairs = fromJust (findMaybePair id pairs)
 
 constructGameFromJSON :: Game -> JSON -> Game
-constructGameFromJSON initGame (Object pairs) = initGame{ levels = constructLevelsFromJSON initLevels (sndp(findPair (ID "levels") pairs))}
+constructGameFromJSON initGame (Object pairs) = initGame {player = constructPlayerFromJSON initPlayer (findPair (ID "player") pairs),
+                                                        levels = constructLevelsFromJSON initLevels pairs}
 
-constructLevelsFromJSON :: [Level] -> JSON -> [Level]
-constructLevelsFromJSON initLevels (Object pairs) = [constructLevelFromJSON initLevel level | level <- levels]
+constructLevelsFromJSON :: [Level] -> [Pair] -> [Level]
+constructLevelsFromJSON initLevels pairs = [constructLevelFromJSON initLevel level | level <- levels]
     where levels = jsonToArray (sndp (findPair (ID "levels") pairs))
 
 constructLevelFromJSON :: Level -> JSON -> Level
-constructLevelFromJSON initLevel (Object pairs) = initLevel{ player = constructPlayerFromJSON initPlayer (findPair (ID "player") pairs)
-                                                        , entities = constructEntitiesFromJSON initEntities(findPair (ID "entities") pairs)
+constructLevelFromJSON initLevel (Object pairs) = initLevel{ entities = constructEntitiesFromJSON initEntities(findPair (ID "entities") pairs)
                                                         , items = constructItemsFromJSON initItems (findPair (ID "items") pairs)
                                                         , layout = jsonToLayout  (sndp (findPair (ID "layout") pairs))
                                                         }
 
 
 constructPlayerFromJSON :: Player -> Pair -> Player
-constructPlayerFromJSON initplayer (Pair _ (Object pairs)) = initplayer{ px = jsonToInt (sndp (findPair (ID "x") pairs))
-                                                                      , py =  jsonToInt (sndp (findPair (ID "y") pairs))
-                                                                      , php = jsonToInt (sndp (findPair (ID "hp") pairs))
+constructPlayerFromJSON initplayer (Pair _ (Object pairs)) = initplayer{ php = jsonToInt (sndp (findPair (ID "hp") pairs))
                                                                       , pinventory = constructItemsFromJSON initItems (findPair (ID "inventory") pairs)
                                                                       }
 
@@ -87,6 +99,7 @@ constructEntityFromJSON (Object entity) = Entity{ eid = jsonToString (sndp (find
 
 
 initGame = Game{
+    player =initPlayer,
     levels = initLevels,
     currentLevel = 0,
     status = initStatus
@@ -94,7 +107,7 @@ initGame = Game{
 
 initLevels = [initLevel]
 
-initLevel = Level 1 (Player 0 0 50 []) [] [] []
+initLevel = Level 1 initEntities initItems initLayout
 
 initPlayer = Player 0 0 50 []
 
@@ -104,4 +117,4 @@ initItems = []
 
 initLayout = []
 
-initStatus = Levelselection
+initStatus = Playing
