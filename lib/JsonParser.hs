@@ -102,4 +102,21 @@ whitespace = skipMany (oneOf " \t\n")
 
 --direction
 parseDirection :: Parser JSON
-parseDirection = Direction <$> (whitespace *> string "up" *> return Up <|> string "down" *> return Down <|> string "left" *> return Datastructures.Left <|> string "right" *> return Datastructures.Right <* whitespace)
+parseDirection = Direction <$> (whitespace *> parseDirection' <* whitespace)
+
+parseDirection' :: Parser Direction
+parseDirection' = parseUp <|> parseDown <|> parseLeft <|> parseRight
+
+parseUp :: Parser Direction
+parseUp =string "up" *> return Up
+
+parseDown :: Parser Direction
+parseDown = string "down" *> return Down
+
+parseLeft :: Parser Direction
+parseLeft = string "left" *> return Datastructures.Left
+
+parseRight :: Parser Direction
+parseRight = string "right" *> return Datastructures.Right
+
+

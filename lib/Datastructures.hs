@@ -42,6 +42,9 @@ jsonToUseTimes (UseTimes a) = a
 jsonToDirection :: JSON -> Direction
 jsonToDirection (Direction a) = a
 
+idtoString :: ID -> String
+idtoString (ID a) = a
+
 sndp :: Pair -> JSON
 sndp (Pair _ b) = b
 
