@@ -47,7 +47,7 @@ levels: [
                 y: 1,
                 name: "Levensbrouwsel",
                 description: "Geeft een aantal levenspunten terug",
-                useTimes: 1,
+                useTimes: 2,
                 value: 50,
 
                 actions: {

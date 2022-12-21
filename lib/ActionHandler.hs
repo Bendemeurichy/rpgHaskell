@@ -20,9 +20,9 @@ findItemInInventory (ID tid) player= head [it | it <- pinventory player, Datastr
 
 removeItemFromInventoryIfNecessary :: Game -> Player -> ID -> Player
 removeItemFromInventoryIfNecessary game player id | useTimes item == Infinite = player
-                                            | amountToInt  (useTimes item) == 0 = removeItemFromInventory player id
+                                            | amountToInt  (useTimes item)-1 == 0 = removeItemFromInventory player id
                                             | otherwise = newPlayer{pinventory = pinventory newPlayer ++ [item{useTimes = Amount (amountToInt  (useTimes item) - 1)}]}
-                                            where   item =findItem id (levels game !! currentLevel game)
+                                            where   item =findItemInInventory id player
                                                     newPlayer = removeItemFromInventory player id
 
 removeItemFromInventory :: Player -> ID -> Player
@@ -30,7 +30,6 @@ removeItemFromInventory player id = player {pinventory = [it | it <- pinventory 
 
 findEntity :: ID -> Level -> [Entity]
 findEntity (ID tid) level= [it | it <- Datastructures.entities level, eid it == tid]
-
 
 
 retrieveItem :: Game -> ID -> Level -> Game
@@ -73,8 +72,8 @@ contains :: [Item] -> ID -> Bool
 contains [] _ = False
 contains (x:xs) (ID cid) = cid == Datastructures.id x || contains xs (ID cid)
 
-increasePlayerHp :: Player -> ID -> Player
-increasePlayerHp player id= removeItemFromInventory (player {php = php player + Datastructures.value (findItemInInventory id player)}) id
+increasePlayerHp :: Game -> Player -> ID -> Player
+increasePlayerHp game player id= removeItemFromInventoryIfNecessary game  (player {php = php player + Datastructures.value (findItemInInventory id player)}) id
 
 decreasePlayerHp :: Player -> ID -> Level -> Player
 decreasePlayerHp player id level= player {php = php player - fromJust(evalue (head (findEntity id level)))}
@@ -84,11 +83,12 @@ decreaseHp entity item level player= (head (findEntity entity level)){ehp = Just
 
 applyFunction :: Game -> Function -> Game
 applyFunction game func | functionName func == ID "leave" = game {player = leave (player game)}
-                        | functionName func == ID "increasePlayerHp" = game {player = increasePlayerHp (player game) (argumentToId (head (arguments func)))}
+                        | functionName func == ID "increasePlayerHp" = game {player = increasePlayerHp game(player game) (argumentToId (head (arguments func)))}
                         | functionName func == ID "decreasePlayerHp" = game {player = decreasePlayerHp (player game) (argumentToId (head (arguments func))) (levels game !! currentLevel game)}
-                        | functionName func == ID "decreaseHp" = game {levels = replaceNth (levels game) (currentLevel game) (levels game !! currentLevel game){entities = [decreaseHp (argumentToId (head (arguments func))) (argumentToId (head (tail (arguments func)))) (levels game !! currentLevel game) (player game)]}}
+                        | functionName func == ID "decreaseHp" = game {player =removeItemFromInventoryIfNecessary game (player game) (argumentToId (head(tail (arguments func)))) ,
+                                                                        levels = replaceNth (levels game) (currentLevel game) (levels game !! currentLevel game){entities = [decreaseHp (argumentToId (head (arguments func))) (argumentToId (head (tail (arguments func)))) (levels game !! currentLevel game) (player game)]}}
                         | functionName func == ID "retrieveItem" = retrieveItem game (argumentToId (head (arguments func))) (levels game !! currentLevel game)
-                        | functionName func == ID "useItem" = useItem (game {player = removeItemFromInventory (player game) (argumentToId (head (arguments func)))}) (ID "door")
+                        | functionName func == ID "useItem" = useItem (game {player = removeItemFromInventoryIfNecessary game (player game) (argumentToId (head (arguments func)))}) (ID "door")
                         | otherwise = game
 
 conditionTrue :: Game -> Function -> Bool
