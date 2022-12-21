@@ -42,6 +42,19 @@ jsonToUseTimes (UseTimes a) = a
 jsonToDirection :: JSON -> Direction
 jsonToDirection (Direction a) = a
 
+amountToInt :: UseTimes -> Int
+amountToInt (Amount a) = a
+
+tilelinetoTiles :: TileLine -> [Tile]
+tilelinetoTiles (TileLine a) = a
+
+argumentToId :: Argument -> ID
+argumentToId (TargetID a) = a
+
+argumentToFunction :: Argument -> Function
+argumentToFunction (ArgumentFunction a) = a
+
+
 idtoString :: ID -> String
 idtoString (ID a) = a
 
@@ -110,10 +123,12 @@ data Direction = Up | Down | Left | Right
     deriving (Show, Eq)
 
 data Game = Game{
+    levelName :: String,
     player :: Player,
     levels :: [Level],
     currentLevel :: Int,
-    status :: Status
+    status :: Status,
+    damageTicks :: Int
 } deriving (Show, Eq)
 
 data Level = Level{

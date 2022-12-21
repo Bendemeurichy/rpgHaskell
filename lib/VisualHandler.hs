@@ -9,6 +9,7 @@ import Graphics.Gloss.Juicy (loadJuicyPNG)
 import HelperFunctions
 import Text.Printf (IsChar(toChar))
 import Data.String (IsString(fromString))
+import ActionHandler
 
 -- maps of txt names to gloss pictures
 
@@ -63,12 +64,17 @@ window = InWindow "RPG" windowSize windowposition
 renderBackground :: Picture
 renderBackground = pictures [translate (-230.0) 0.0 (scale 20.0 18.0 (lookupPicture gameUiMap "background")), rotate 180.0 (translate (-230.0) 0.0 (scale 20.0 18.0 (lookupPicture gameUiMap "background")))]
 
-render :: Game -> Picture
-render game = pictures [renderBackground,renderLayout (layout (levels game!! currentLevel game)),renderplayer (player game),renderItems (items (levels game !! currentLevel game)) (heightCurrentLevel game) ,
-    renderEntities (entities (levels game !! currentLevel game)) (heightCurrentLevel game), renderUI game]
+render :: Game -> Picture 
+render game | status game == Levelselection = renderStart game
+            | status game == Playing = renderPlaying game
+            | status game == Won = renderEnding game
+
+renderPlaying :: Game -> Picture
+renderPlaying game = pictures [renderBackground,renderLayout (layout (levels game!! currentLevel game)),renderItems (items (levels game !! currentLevel game)) ,
+    renderEntities (entities (levels game !! currentLevel game)), renderUI game,renderplayer (player game)]
 
 renderplayer :: Player -> Picture
-renderplayer player = translate (convertx (px player)) (converty (py player)) (scale scaleSize scaleSize (lookupPicture characterMap "player"))
+renderplayer player = translate (convertx (px player + 1)) (converty (py player + 1)) (scale scaleSize scaleSize (lookupPicture characterMap "player"))
 
 renderTile :: Tile -> Picture
 renderTile tile = scale scaleSurface scaleSurface (lookupTile levelMap tile)
@@ -77,16 +83,16 @@ renderTileLine :: TileLine -> Int -> Picture
 renderTileLine (TileLine tiles) y = pictures [translate  (convertx i) (converty y) (renderTile (tiles !! i)) | i <- [0..length tiles - 1]]
 
 renderLayout :: [TileLine] -> Picture
-renderLayout layout = pictures [renderTileLine (layout !! y) y  | y <- [0..length layout - 1]]
+renderLayout layout = pictures [renderTileLine (reverse layout !! y) y  | y <- [(length layout - 1),length layout -2 ..0]]
 
-renderItem :: Item -> Int -> Picture
-renderItem item height = translate (convertx (1+x item))(converty (height-y  item)) (scale scaleSize scaleSize (lookupPicture itemMap (Datastructures.id item)))
+renderItem :: Item -> Picture
+renderItem item  = translate (convertx (1+x item))(converty (1 + y  item)) (scale scaleSize scaleSize (lookupPicture itemMap (Datastructures.id item)))
 
-renderItems :: [Item] -> Int  -> Picture
-renderItems items height = pictures [renderItem item height | item <- items]
+renderItems :: [Item]   -> Picture
+renderItems items = pictures [renderItem item | item <- items]
 
-translateEntity :: Entity -> Int -> Picture
-translateEntity entity height = translate (convertx (1 + ex entity)) (converty (height - ey entity)) (rotateEntity entity)
+translateEntity :: Entity-> Picture
+translateEntity entity = translate (convertx (1 + ex entity)) (converty (1 + ey entity)) (rotateEntity entity)
 
 renderEntity :: Entity -> Picture
 renderEntity entity | eid entity == "door" =  scale scaleSize scaleSize (lookupDoor entity)
@@ -99,8 +105,8 @@ rotateEntity entity | isNothing (eDirection entity) = renderEntity entity
                     | fromJust (eDirection entity) == Datastructures.Right = rotate 270.0 (renderEntity entity )
                     | otherwise = renderEntity entity
 
-renderEntities :: [Entity] -> Int -> Picture
-renderEntities entities height = pictures [translateEntity entity height| entity <- entities]
+renderEntities :: [Entity]  -> Picture
+renderEntities entities  = pictures [translateEntity entity | entity <- entities]
 
 lookupDoor :: Entity -> Picture
 lookupDoor entity | isNothing (evalue entity) = lookupPicture characterMap "doorClosed"
@@ -117,8 +123,9 @@ renderActions game =color white (translate (-480.0) 0.0 (pictures [ translate 0.
     where actions = detectActions  game
 
 renderAction :: Action -> Int-> Picture
-renderaction act i  | functionName (action act) == ID "decreaseHP" = undefined -- specify weapon
-renderAction act i = translate 0.0 (convertyActions (i+1)) (scale 0.1 0.1 (text ( show i ++ ") " ++idtoString (functionName  (action act)))))
+renderAction act i  | functionName (action act) == ID "decreaseHp" = translate 0.0 (convertyActions (i+1)) (scale 0.1 0.1 (text ( show i ++ ") " ++idtoString (functionName  (action act)) ++ " " ++ idtoString  (argumentToId  (arguments  (action act) !! 1)))))
+                    |otherwise = translate 0.0 (convertyActions (i+1)) (scale 0.1 0.1 (text ( show i ++ ") " ++idtoString (functionName  (action act)))))
+
 
 renderActionbar :: Picture
 renderActionbar = translate (-400.0) 0.0 (scale 9.4 15.0 (rotate 180.0 (lookupPicture gameUiMap "actionbar")))
@@ -150,11 +157,17 @@ renderHeart heart | heart == "full" = lookupPicture gameUiMap "heartFull"
                 |heart == "half" = lookupPicture gameUiMap "heartHalf"
                 | otherwise = lookupPicture gameUiMap "heartEmpty"
 
+renderEnding :: Game -> Picture
+renderEnding game = Pictures [renderBackground, color white (translate (-170) 0 (scale 0.5 0.5 (text "You won!")))]
+
+renderStart :: Game -> Picture
+renderStart game = Pictures [renderBackground,color white ( translate (-170) 0 (scale 0.5 0.5 (text "Press space to start")))]
+
 convertx :: Int -> Float
 convertx x = fromIntegral x * 40.0 + 75.0
 
 converty :: Int -> Float
-converty y = - fromIntegral y * 40.0 + 225.0
+converty y = fromIntegral y * 40.0
 
 convertxItems :: Int -> Float
 convertxItems x = (fromIntegral x * 80.0) - 100.0
@@ -171,4 +184,3 @@ scaleSurface = 2.0
 
 scaleSize :: Float
 scaleSize = 1.3
-

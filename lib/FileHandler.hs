@@ -36,10 +36,11 @@ showLevel levelname = do
     )
 
 startLevel :: String -> Game
-startLevel levelname = changePlayerInGame game (findStart  (layout (levels game!!currentLevel game)))
+startLevel levelname = (changePlayerInGame game (findStart  (layout (levels game!!currentLevel game)))){levelName = levelname}
     where game =unsafePerformIO (constructLevel levelname)
 
-
+restartLevel :: Game -> Game
+restartLevel game= startLevel (levelName game)
 
 findMaybePair :: ID -> [Pair] -> Maybe Pair
 findMaybePair _ [] = Nothing
@@ -99,10 +100,12 @@ constructEntityFromJSON (Object entity) = Entity{ eid = jsonToString (sndp (find
 
 
 initGame = Game{
+    levelName ="",
     player =initPlayer,
     levels = initLevels,
     currentLevel = 0,
-    status = initStatus
+    status = initStatus,
+    damageTicks = 0
 }
 
 initLevels = [initLevel]
