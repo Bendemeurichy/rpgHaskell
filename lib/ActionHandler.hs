@@ -28,8 +28,10 @@ removeItemFromInventoryIfNecessary game player id | useTimes item == Infinite = 
 removeItemFromInventory :: Player -> ID -> Player
 removeItemFromInventory player id = player {pinventory = [it | it <- pinventory player, Datastructures.id it /= idtoString  id]}
 
-findEntity :: ID -> Level -> Entity
-findEntity (ID tid) level= head [it | it <- Datastructures.entities level, eid it == tid]
+findEntity :: ID -> Level -> [Entity]
+findEntity (ID tid) level= [it | it <- Datastructures.entities level, eid it == tid]
+
+
 
 retrieveItem :: Game -> ID -> Level -> Game
 retrieveItem game id level = game {player = (player game){pinventory = pinventory (player game) ++ [findItem id level]}, levels = removeItemFromLevel game id}
@@ -59,7 +61,7 @@ leave :: Player -> Player
 leave player = player {php =0}
 
 useItem:: Game -> ID -> Game
-useItem game entity = addEntityToLevel (findEntity entity (levels game !! currentLevel game)){evalue=Just 1} (useItem' game entity)
+useItem game entity = addEntityToLevel (head (findEntity entity (levels game !! currentLevel game))){evalue=Just 0} (useItem' game entity)
 
 useItem' :: Game -> ID -> Game
 useItem' game entity = game {levels = removeEntityFromLevel game entity}
@@ -75,16 +77,16 @@ increasePlayerHp :: Player -> ID -> Player
 increasePlayerHp player id= removeItemFromInventory (player {php = php player + Datastructures.value (findItemInInventory id player)}) id
 
 decreasePlayerHp :: Player -> ID -> Level -> Player
-decreasePlayerHp player id level= player {php = php player - fromJust(evalue (findEntity id level))}
+decreasePlayerHp player id level= player {php = php player - fromJust(evalue (head (findEntity id level)))}
 
-decreaseHp::ID -> ID -> Level -> Entity
-decreaseHp entity item level = (findEntity entity level){ehp = Just  (fromJust (ehp (findEntity entity level)) - Datastructures.value (findItem item level))}
+decreaseHp::ID -> ID -> Level -> Player -> Entity
+decreaseHp entity item level player= (head (findEntity entity level)){ehp = Just  (fromJust (ehp(head (findEntity entity level))) - Datastructures.value (findItemInInventory item player))}
 
 applyFunction :: Game -> Function -> Game
 applyFunction game func | functionName func == ID "leave" = game {player = leave (player game)}
                         | functionName func == ID "increasePlayerHp" = game {player = increasePlayerHp (player game) (argumentToId (head (arguments func)))}
                         | functionName func == ID "decreasePlayerHp" = game {player = decreasePlayerHp (player game) (argumentToId (head (arguments func))) (levels game !! currentLevel game)}
-                        | functionName func == ID "decreaseHp" = game {levels = replaceNth (levels game) (currentLevel game) (levels game !! currentLevel game){entities = [decreaseHp (argumentToId (head (arguments func))) (argumentToId (head (tail (arguments func)))) (levels game !! currentLevel game)]}}
+                        | functionName func == ID "decreaseHp" = game {levels = replaceNth (levels game) (currentLevel game) (levels game !! currentLevel game){entities = [decreaseHp (argumentToId (head (arguments func))) (argumentToId (head (tail (arguments func)))) (levels game !! currentLevel game) (player game)]}}
                         | functionName func == ID "retrieveItem" = retrieveItem game (argumentToId (head (arguments func))) (levels game !! currentLevel game)
                         | functionName func == ID "useItem" = useItem (game {player = removeItemFromInventory (player game) (argumentToId (head (arguments func)))}) (ID "door")
                         | otherwise = game

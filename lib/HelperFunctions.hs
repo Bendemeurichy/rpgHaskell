@@ -4,20 +4,16 @@ import Datastructures
 import Graphics.Gloss.Interface.IO.Game
 import ActionHandler (conditionTrue, findEntity)
 import Data.Maybe (isNothing)
+import Data.List
 
 findStart :: [TileLine] -> (Int, Int)
-findStart tileLines = findStart' (reverse tileLines) 0 0
-
-findStart' :: [TileLine] -> Int -> Int -> (Int, Int)
-findStart' [] _ _ = error "No start tile found"
-findStart' (x:xs) y z = if Start `elem` tiles x then (z, y-1) else findStart' xs (y+1) z
+findStart tileLines = findCoordinate tileLines Start
 
 findEnd :: [TileLine] -> (Int, Int)
-findEnd tileLines = findEnd' (reverse tileLines) 0 0
+findEnd tileLines = findCoordinate tileLines End
 
-findEnd' :: [TileLine] -> Int -> Int -> (Int, Int)
-findEnd' [] _ _ = error "No end tile found"
-findEnd' (x:xs) y z = if End `elem` tiles x then (z, y-1) else findEnd' xs (y+1) z
+findCoordinate :: [TileLine] -> Tile -> (Int, Int)
+findCoordinate l t = head [(x-1, y-1) | (y, line) <- zip [0 ..] (reverse l), x <- elemIndices t (tiles line)]
 
 isEndingTile :: (Int, Int) -> [TileLine] -> Bool
 isEndingTile (x,y) tileLines | x == fst ending && y == snd ending = True
@@ -73,7 +69,8 @@ isValidStep (x,y) tilelines game | isFloor (x,y) tilelines && isDoorOpen (x,y) (
                             | otherwise = False
 
 isDoorOpen :: (Int, Int) -> Level -> Bool
-isDoorOpen (x,y) level | ex door == (x-1) && ey door == (y-1) && isNothing(evalue door)  = False
+isDoorOpen (x,y) level |null door = True
+                        | ex (head door) == (x-1) && ey (head door) == (y-1) && isNothing(evalue (head door))  = False
                         | otherwise = True
     where door = findEntity (ID "door") level
 
@@ -94,14 +91,4 @@ isNumber (EventKey (Char k) Graphics.Gloss.Interface.IO.Game.Down _ _) = k `elem
 isNumber _ = False
 
 getNumber :: Event -> String
-getNumber (EventKey (Char '1') _ _ _) = "1"
-getNumber (EventKey (Char '2') _ _ _) = "2"
-getNumber (EventKey (Char '3') _ _ _) = "3"
-getNumber (EventKey (Char '4') _ _ _) = "4"
-getNumber (EventKey (Char '5') _ _ _) = "5"
-getNumber (EventKey (Char '6') _ _ _) = "6"
-getNumber (EventKey (Char '7') _ _ _) = "7"
-getNumber (EventKey (Char '8') _ _ _) = "8"
-getNumber (EventKey (Char '9') _ _ _) = "9"
-getNumber (EventKey (Char '0') _ _ _) = "0"
-getNumber _ = ""
+getNumber (EventKey (Char k) Graphics.Gloss.Interface.IO.Game.Down _ _ ) = [k]

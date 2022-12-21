@@ -3,13 +3,15 @@ import Graphics.Gloss.Interface.IO.Game
 import Datastructures
 import HelperFunctions
 import qualified Data.Bifunctor
-import ActionHandler (applyFunction)
+import ActionHandler (applyFunction, decreasePlayerHp, removeEntityFromLevel)
 import FileHandler (restartLevel)
 import VisualHandler (gameUiMap)
 import StartAndEnd
+import qualified Data.Maybe
+import Data.Maybe (fromJust)
 
 update :: Float -> Game -> Game
-update _ game = game
+update _ game = enemyTurn (gameChecks game)
 
 --bestaat using namespace Datastructures of iets gelijkaardig ??
 moveDirection :: Direction -> (Int, Int)
@@ -30,7 +32,7 @@ move game dir | canmove game dir = game {player = changePlayerPosition (player g
 
 handleInput :: Event -> Game -> Game
 handleInput ev game | status game == Levelselection = handleLevelSelectionInput ev game
-                  | status game == Datastructures.Playing = gameChecks(handleGameInput ev game)
+                  | status game == Datastructures.Playing = handleGameInput ev game
                   | otherwise = game
 
 handleGameInput :: Event -> Game -> Game
@@ -50,5 +52,35 @@ ifEndingTile game | isEndingTile (px (player game), py (player game)) (layout (l
                   | isEndingTile (px (player game), py (player game)) (layout (levels game !! currentLevel game)) = changePlayerInGame (game {currentLevel = currentLevel game +1}) (findStart (layout (levels game !! (currentLevel game +1))))
                   | otherwise = game
 
+enemyTurn :: Game -> Game
+enemyTurn game = enemiesDamage (dissapearIfDead game)
+
 gameChecks :: Game -> Game
 gameChecks game = ifEndingTile (restartIfDead game)
+
+enemiesDamage :: Game -> Game
+enemiesDamage game = foldl dealDamage game (entities (levels game !! currentLevel game))
+
+dealDamage :: Game -> Entity -> Game
+dealDamage game entity | playerInRange game entity && Data.Maybe.isJust (evalue entity) && damageTicks game `mod` 60 == 0 = game {player = decreasePlayerHp (player game) (ID (eid entity)) (levels game !! currentLevel game),damageTicks = damageTicks game +1}
+                       | otherwise = game{damageTicks = damageTicks game +1}
+
+dissapearIfDead :: Game -> Game
+dissapearIfDead game = foldl dissapear game (entities (levels game !! currentLevel game))
+
+dissapear :: Game -> Entity -> Game
+dissapear game entity | shouldDissapear game entity = game{levels = removeEntityFromLevel  game (ID (eid entity))}
+                        | otherwise = game
+
+
+shouldDissapear :: Game -> Entity -> Bool
+shouldDissapear game entity | Data.Maybe.isJust (ehp  entity) && fromJust (ehp entity) <= 0 = True
+                            | otherwise = False
+
+playerInRange :: Game -> Entity -> Bool
+playerInRange game entity | px (player game) == ex entity && py (player game) == ey entity = True
+                        | px (player game) == ex entity -1 && py (player game) == ey entity = True
+                        | px (player game) == ex entity +1 && py (player game) == ey entity = True
+                        | px (player game) == ex entity && py (player game) == ey entity -1 = True
+                        | px (player game) == ex entity && py (player game) == ey entity +1 = True
+                        | otherwise = False

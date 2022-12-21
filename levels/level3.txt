@@ -60,8 +60,8 @@ levels: [
         entities: [
             {
                 id: "devil",
-                x: 1,
-                y: 2,
+                x: 3,
+                y: 3,
                 name: "Duivel",
                 description: "Een monster uit de hel",
                 hp: 50,
