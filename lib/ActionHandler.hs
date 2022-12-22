@@ -121,7 +121,9 @@ isLocInRangeI (tx,ty) item | tx == x item && ty == y item = True
 
 
 useItem:: Game -> ID -> Game
-useItem game entity = addEntityToLevel (findEntity game entity (levels game !! currentLevel game)){evalue=Just 0} (useItem' game entity)
+useItem game entityid = if isNothing (evalue entity) then addEntityToLevel entity {evalue=Just 0} (useItem' game entityid) else game
+                      where entity = findEntity game entityid (levels game !! currentLevel game)
+                            
 
 useItem' :: Game -> ID -> Game
 useItem' game entity = game {levels = removeEntityFromLevel game entity}

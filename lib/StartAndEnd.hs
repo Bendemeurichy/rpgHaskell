@@ -15,7 +15,7 @@ toEnding :: Game -> Game
 toEnding game = game {status = Won}
 
 toLevelSelection :: Game -> Game
-toLevelSelection game = game {status = Levelselection}
+toLevelSelection game = game {status = Levelselection, currentLevel = 0}
 
 handleLevelSelectionInput :: Event -> Game -> Game
 handleLevelSelectionInput ev game | isKey 'w' ev = moveSelector game Datastructures.Up
