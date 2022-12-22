@@ -1,5 +1,6 @@
 module FileHandler where
 
+import System.Directory
 import Datastructures
 import JsonParser
 import Text.Parsec
@@ -10,17 +11,18 @@ import Data.Maybe (fromJust, isNothing)
 import GHC.TopHandler (runIO)
 import System.Posix.Internals (withFilePath)
 import HelperFunctions
+import Data.List (sort)
 
-constructLevel :: String -> IO Game
-constructLevel levelname = do
+constructLevel :: String -> Game -> IO Game
+constructLevel levelname game = do
     file <- readFile ("levels/" ++ levelname ++ ".txt")
     let json = parse parseJSON "" file
     case
         json of
             Prelude.Left err -> error $ show err
             Prelude.Right json -> do
-                let game = constructGameFromJSON initGame json
-                return game
+                let constructedgame = constructGameFromJSON game json
+                return constructedgame
 
 showLevel :: String -> IO ()
 showLevel levelname = do
@@ -35,12 +37,12 @@ showLevel levelname = do
           Prelude.Right json -> putStr (show json)
     )
 
-startLevel :: String -> Game
-startLevel levelname = (changePlayerInGame game (findStart  (layout (levels game!!currentLevel game)))){levelName = levelname}
-    where game =unsafePerformIO (constructLevel levelname)
+startLevel :: String ->Game -> Game
+startLevel levelname game = (changePlayerInGame constructedgame (findStart  (layout (levels constructedgame!!currentLevel constructedgame)))){levelName = levelname}
+    where constructedgame =unsafePerformIO (constructLevel levelname game)
 
 restartLevel :: Game -> Game
-restartLevel game= startLevel (levelName game)
+restartLevel game= startLevel (levelName game) game
 
 findMaybePair :: ID -> [Pair] -> Maybe Pair
 findMaybePair _ [] = Nothing
@@ -105,14 +107,15 @@ initGame = Game{
     levels = initLevels,
     currentLevel = 0,
     status = initStatus,
-    damageTicks = 0
+    damageTicks = 0,
+    selectionScreen  = initSelectionScreen
 }
 
 initLevels = [initLevel]
 
 initLevel = Level 1 initEntities initItems initLayout
 
-initPlayer = Player 0 0 50 []
+initPlayer = Player Datastructures.Right 0 0 50 []
 
 initEntities = []
 
@@ -120,4 +123,25 @@ initItems = []
 
 initLayout = []
 
-initStatus = Playing
+initStatus = Levelselection
+
+initSelector :: Selector
+initSelector = Selector {selected = 0}
+
+initSelectionScreen :: SelectionScreen
+initSelectionScreen = SelectionScreen {selector = initSelector, levelfiles = initLevelfiles}
+
+initLevelfiles :: [String]
+initLevelfiles = sort findLevelFiles
+
+findLevelFiles :: [String]
+{-# NOINLINE findLevelFiles #-}
+findLevelFiles = unsafePerformIO $ do
+    levels <- getDirectoryContents "levels"
+    return $ map (reverse . drop 4 . reverse) $ filter (\x -> getExtension x == "txt") levels
+
+getExtension :: String -> String
+getExtension [] = []
+getExtension (x:xs)
+    | x == '.' = xs
+    | otherwise = getExtension xs

@@ -96,6 +96,7 @@ data Item = Item{
 } deriving (Show, Eq)
 
 data Player = Player{
+    playerdirection::Direction,
     px::Int,
     py::Int,
     php::Int,
@@ -128,7 +129,8 @@ data Game = Game{
     levels :: [Level],
     currentLevel :: Int,
     status :: Status,
-    damageTicks :: Int
+    damageTicks :: Int,
+    selectionScreen :: SelectionScreen
 } deriving (Show, Eq)
 
 data Level = Level{
@@ -139,3 +141,7 @@ data Level = Level{
 } deriving (Show, Eq)
 
 data Status = Levelselection | Playing | Won | Lost deriving (Show, Eq)
+
+data Selector = Selector {selected :: Int} deriving (Show, Eq)
+
+data SelectionScreen = SelectionScreen {selector :: Selector, levelfiles :: [String]} deriving (Show, Eq)

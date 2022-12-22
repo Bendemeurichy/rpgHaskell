@@ -2,7 +2,7 @@ module HelperFunctions where
 
 import Datastructures
 import Graphics.Gloss.Interface.IO.Game
-import ActionHandler (conditionTrue, findEntity)
+import ActionHandler hiding (detectItems, detectAllActions, detectEntities, detectCoordinates) 
 import Data.Maybe (isNothing)
 import Data.List
 
@@ -43,7 +43,6 @@ checkCondition game conditions | null conditions = True
                             |otherwise = conditionTrue game (head conditions) && checkCondition game (tail conditions )
 
 
-
 detectEntities :: Game -> [Entity]
 detectEntities game = [ent | ent <- entities (levels game !! currentLevel game) , detectCoordinates (px (player game), py (player game)) (ex ent, ey ent)]
 
@@ -57,23 +56,6 @@ detectCoordinates (x1,y1) (x2,y2) | x1 == x2 && y1 == y2 = True
                                 | x1 == x2 && y1+1 == y2 = True
                                 | x1 == x2 && y1-1 == y2 = True
                                 | otherwise = False
-
-isFloor :: (Int, Int) -> [TileLine] -> Bool
-isFloor (x,y) tilelines | tilelinetoTiles (reverse tilelines !! y) !! x == Floor = True
-                        | tilelinetoTiles (reverse tilelines !! y) !! x == Start = True
-                        | tilelinetoTiles (reverse tilelines !! y) !! x == End = True
-                       | otherwise = False
-
-isValidStep :: (Int, Int) -> [TileLine] -> Game -> Bool
-isValidStep (x,y) tilelines game | isFloor (x,y) tilelines && isDoorOpen (x,y) (levels game !! currentLevel game) = True
-                            | otherwise = False
-
-isDoorOpen :: (Int, Int) -> Level -> Bool
-isDoorOpen (x,y) level |null door = True
-                        | ex (head door) == (x-1) && ey (head door) == (y-1) && isNothing(evalue (head door))  = False
-                        | otherwise = True
-    where door = findEntity (ID "door") level
-
 
 -- detect if key pressed is one of special keys
 isSpecialKey :: SpecialKey -> Event -> Bool
@@ -92,3 +74,4 @@ isNumber _ = False
 
 getNumber :: Event -> String
 getNumber (EventKey (Char k) Graphics.Gloss.Interface.IO.Game.Down _ _ ) = [k]
+

@@ -3,15 +3,16 @@ import Graphics.Gloss.Interface.IO.Game
 import Datastructures
 import HelperFunctions
 import qualified Data.Bifunctor
-import ActionHandler (applyFunction, decreasePlayerHp, removeEntityFromLevel)
+import ActionHandler
 import FileHandler (restartLevel)
-import VisualHandler (gameUiMap)
 import StartAndEnd
 import qualified Data.Maybe
 import Data.Maybe (fromJust)
 
 update :: Float -> Game -> Game
-update _ game = enemyTurn (gameChecks game)
+update _ game | status game == Levelselection = game 
+               | status game ==Playing = enemyTurn (gameChecks game)
+               | otherwise = game
 
 --bestaat using namespace Datastructures of iets gelijkaardig ??
 moveDirection :: Direction -> (Int, Int)
@@ -27,12 +28,19 @@ canmove game dir | isValidStep (Data.Bifunctor.bimap
                  | otherwise = False
 
 move :: Game -> Direction -> Game
-move game dir | canmove game dir = game {player = changePlayerPosition (player game) (Data.Bifunctor.bimap (px (player game) +) (py (player game) +) (moveDirection dir))}
+move game dir | canmove game dir = game {player =changeDirection (changePlayerPosition (player game) (Data.Bifunctor.bimap (px (player game) +) (py (player game) +) (moveDirection dir))) dir}
               | otherwise = game
+
+changeDirection :: Player -> Direction -> Player
+changeDirection player dir | dir == Datastructures.Left = player {playerdirection = Datastructures.Left}
+                           | dir == Datastructures.Right = player {playerdirection = Datastructures.Right}
+                           | otherwise = player
+
 
 handleInput :: Event -> Game -> Game
 handleInput ev game | status game == Levelselection = handleLevelSelectionInput ev game
                   | status game == Datastructures.Playing = handleGameInput ev game
+                  | status game == Won = handleEndingInput ev game
                   | otherwise = game
 
 handleGameInput :: Event -> Game -> Game
@@ -62,7 +70,7 @@ enemiesDamage :: Game -> Game
 enemiesDamage game = foldl dealDamage game (entities (levels game !! currentLevel game))
 
 dealDamage :: Game -> Entity -> Game
-dealDamage game entity | playerInRange game entity && Data.Maybe.isJust (evalue entity) && damageTicks game `mod` 60 == 0 = game {player = decreasePlayerHp (player game) (ID (eid entity)) (levels game !! currentLevel game),damageTicks = damageTicks game +1}
+dealDamage game entity | playerInEntityRange game entity && Data.Maybe.isJust (evalue entity) && damageTicks game `mod` 60 == 0 = game {player = decreasePlayerHp game (player game) (ID (eid entity)) (levels game !! currentLevel game),damageTicks = damageTicks game +1}
                        | otherwise = game{damageTicks = damageTicks game +1}
 
 dissapearIfDead :: Game -> Game
@@ -76,11 +84,3 @@ dissapear game entity | shouldDissapear game entity = game{levels = removeEntity
 shouldDissapear :: Game -> Entity -> Bool
 shouldDissapear game entity | Data.Maybe.isJust (ehp  entity) && fromJust (ehp entity) <= 0 = True
                             | otherwise = False
-
-playerInRange :: Game -> Entity -> Bool
-playerInRange game entity | px (player game) == ex entity && py (player game) == ey entity = True
-                        | px (player game) == ex entity -1 && py (player game) == ey entity = True
-                        | px (player game) == ex entity +1 && py (player game) == ey entity = True
-                        | px (player game) == ex entity && py (player game) == ey entity -1 = True
-                        | px (player game) == ex entity && py (player game) == ey entity +1 = True
-                        | otherwise = False

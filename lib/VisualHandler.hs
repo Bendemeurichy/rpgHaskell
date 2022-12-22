@@ -10,42 +10,8 @@ import HelperFunctions
 import Text.Printf (IsChar(toChar))
 import Data.String (IsString(fromString))
 import ActionHandler
-
--- maps of txt names to gloss pictures
-
-characterMap :: [(String, Picture)]
-characterMap = [("player", loadPicture "characters" "oldman"), ("devil", loadPicture "characters" "leftCat"),
-    ("doorClosed", loadPicture "characters" "doorClosed"), ("doorOpen", loadPicture "characters" "doorOpen")]
-
-gameUiMap :: [(String, Picture)]
-gameUiMap = [("actionbar", loadPicture "gameUi" "actionbar"),("background",loadPicture "gameUi" "background"),
-    ("heartEmpty",loadPicture "gameUi" "heartEmpty"),("heartFull",loadPicture "gameUi" "heartFull"),
-    ("heartHalf",loadPicture "gameUi" "heartHalf"),("inventoryBox",loadPicture "gameUi" "inventoryBox"),
-    ("inventorySelector",loadPicture "gameUi" "inventorySelector"),("inventorySlot",loadPicture "gameUi" "inventorySlot")]
-
-itemMap :: [(String, Picture)]
-itemMap = [("dagger", loadPicture "items" "dagger"), ("potion", loadPicture "items" "potion"),
-    ("sword", loadPicture "items" "sword"), ("key", loadPicture "items" "key")]
-
-levelMap :: [(Tile, Picture)]
-levelMap = [(Wall, loadPicture "level" "levelWall"), (Floor, loadPicture "level" "levelFloor"),
-    (End, loadPicture "level" "levelExit"), (Start, loadPicture "level" "levelStart")]
-
-startMap :: [(String, Picture)]
-startMap = [("endScreenTextBar", loadPicture "startAndEnding" "endScreenTextBar"),("levelNameBar",loadPicture "startAndEnding" "levelNameBar"),
-    ("levelSelector",loadPicture "startAndEnding" "levelSelector")]
-
--- helper function to load the pictures from files
-
-loadPicture :: String -> String -> Picture
-loadPicture folder name = fromMaybe Blank (unsafePerformIO (loadJuicyPNG ("lib/assets/" ++ folder ++ "/" ++ name ++ ".png")))
-
--- helper function to get the picture from a map
-lookupPicture :: [(String, Picture)] -> String -> Picture
-lookupPicture map name = fromJust (lookup name map)
-
-lookupTile :: [(Tile, Picture)] -> Tile -> Picture
-lookupTile map tile = fromJust (lookup tile map)
+import AssetPictures
+import StartAndEnd
 
 --functions to render the game correctly
 windowposition :: (Int, Int)
@@ -60,10 +26,6 @@ fps = 60
 window :: Display
 window = InWindow "RPG" windowSize windowposition
 
---constants because background doensn't need to change easily
-renderBackground :: Picture
-renderBackground = pictures [translate (-230.0) 0.0 (scale 20.0 18.0 (lookupPicture gameUiMap "background")), rotate 180.0 (translate (-230.0) 0.0 (scale 20.0 18.0 (lookupPicture gameUiMap "background")))]
-
 render :: Game -> Picture 
 render game | status game == Levelselection = renderStart game
             | status game == Playing = renderPlaying game
@@ -74,7 +36,8 @@ renderPlaying game = pictures [renderBackground,renderLayout (layout (levels gam
     renderEntities (entities (levels game !! currentLevel game)), renderUI game,renderplayer (player game)]
 
 renderplayer :: Player -> Picture
-renderplayer player = translate (convertx (px player + 1)) (converty (py player + 1)) (scale scaleSize scaleSize (lookupPicture characterMap "player"))
+renderplayer player | playerdirection player == Datastructures.Left = translate (convertx (px player + 1)) (converty (py player + 1)) (scale (-scaleSize) scaleSize (lookupPicture characterMap "player"))
+                    |otherwise = translate (convertx (px player + 1)) (converty (py player + 1)) (scale scaleSize scaleSize (lookupPicture characterMap "player"))
 
 renderTile :: Tile -> Picture
 renderTile tile = scale scaleSurface scaleSurface (lookupTile levelMap tile)
@@ -116,7 +79,7 @@ renderUI :: Game -> Picture
 renderUI game = pictures [renderActionsfield game, renderInventory (player game)]
 
 renderActionsfield :: Game -> Picture
-renderActionsfield game = pictures [renderActionbar , renderActions game]
+renderActionsfield game = pictures [renderActionbar , renderActions game,renderMovementPrompt]
 
 renderActions :: Game -> Picture
 renderActions game =color white (translate (-480.0) 0.0 (pictures [ translate 0.0 250.0 (scale 0.2 0.2 (text "Actions")),pictures [renderAction (actions !! i) i | i <- [0..length actions -1 ]]]))
@@ -157,11 +120,23 @@ renderHeart heart | heart == "full" = lookupPicture gameUiMap "heartFull"
                 |heart == "half" = lookupPicture gameUiMap "heartHalf"
                 | otherwise = lookupPicture gameUiMap "heartEmpty"
 
-renderEnding :: Game -> Picture
-renderEnding game = Pictures [renderBackground, color white (translate (-170) 0 (scale 0.5 0.5 (text "You won!")))]
+renderMovementPrompt :: Picture
+renderMovementPrompt = pictures [renderW,renderS,renderA,renderD]
 
-renderStart :: Game -> Picture
-renderStart game = Pictures [renderBackground,color white ( translate (-170) 0 (scale 0.5 0.5 (text "Press space to start")))]
+renderW :: Picture
+renderW = translate (-380.0) (-180.0) (scale 0.6 0.6 (lookupPicture inputMap "w"))
+
+renderS :: Picture
+renderS = translate (-380.0) (-220.0) (scale 0.6 0.6 (lookupPicture inputMap "s"))
+
+renderA :: Picture
+renderA = translate (-420.0) (-220.0) (scale 0.6 0.6 (lookupPicture inputMap "a"))
+
+renderD :: Picture
+renderD = translate (-340.0) (-220.0) (scale 0.6 0.6 (lookupPicture inputMap "d"))
+
+
+
 
 convertx :: Int -> Float
 convertx x = fromIntegral x * 40.0 + 75.0
