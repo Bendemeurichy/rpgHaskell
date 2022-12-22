@@ -51,8 +51,6 @@ removeItemFromLevel' level id = level {items = [it | it <- Datastructures.items 
 removeEntityFromLevel :: Game -> ID -> [Level]
 removeEntityFromLevel game id = replaceNth (levels game) (currentLevel game) (removeEntityFromLevel' (levels game !! currentLevel game) id)
 
-
-
 removeEntityFromLevel' :: Level -> ID -> Level
 removeEntityFromLevel' level id = level {entities = [it | it <- Datastructures.entities level, eid it /= idtoString  id]}
 

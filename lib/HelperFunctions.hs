@@ -2,7 +2,7 @@ module HelperFunctions where
 
 import Datastructures
 import Graphics.Gloss.Interface.IO.Game
-import ActionHandler hiding (detectItems, detectAllActions, detectEntities, detectCoordinates) 
+import ActionHandler
 import Data.Maybe (isNothing)
 import Data.List
 

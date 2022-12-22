@@ -1,5 +1,5 @@
 player: {
-    hp: 50,
+    hp: 45,
     inventory: [
         {
             id: "dagger",
