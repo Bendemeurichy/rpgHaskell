@@ -33,26 +33,27 @@ removeItemFromInventory :: Player -> ID -> Player
 removeItemFromInventory player id = player {pinventory = [it | it <- pinventory player, Datastructures.id it /= idtoString  id]}
 
 findEntity :: Game ->ID -> Level -> Entity
-findEntity game (ID tid) level= head [it | it <- findEntity' tid level,playerInEntityRange game it ]
+findEntity game (ID tid) level= head [it | it <- findEntity' (ID tid) level,playerInEntityRange game it ]
 
-findEntity' :: String -> Level -> [Entity]
-findEntity' tid level= [it | it <- Datastructures.entities level, eid it == tid]
+findEntity' :: ID -> Level -> [Entity]
+findEntity' (ID tid) level= [it | it <- Datastructures.entities level, eid it == tid]
 
 
 retrieveItem :: Game -> ID -> Level -> Game
 retrieveItem game id level = game {player = (player game){pinventory = pinventory (player game) ++ [findItem game id level]}, levels = removeItemFromLevel game id}
 
 removeItemFromLevel :: Game -> ID -> [Level]
-removeItemFromLevel game id = replaceNth (levels game) (currentLevel game) (removeItemFromLevel' (levels game !! currentLevel game) id)
+removeItemFromLevel game id = replaceNth (levels game) (currentLevel game) (removeItemFromLevel' (levels game !! currentLevel game) (findItem game id (levels game !! currentLevel game)))
 
-removeItemFromLevel' :: Level -> ID -> Level
-removeItemFromLevel' level id = level {items = [it | it <- Datastructures.items level, Datastructures.id it /= idtoString  id]}
+removeItemFromLevel' :: Level -> Item -> Level
+removeItemFromLevel' level item = level {items = [it | it <- Datastructures.items level, it /= item]}
+
 
 removeEntityFromLevel :: Game -> ID -> [Level]
-removeEntityFromLevel game id = replaceNth (levels game) (currentLevel game) (removeEntityFromLevel' (levels game !! currentLevel game) id)
+removeEntityFromLevel game id = replaceNth (levels game) (currentLevel game) (removeEntityFromLevel' (levels game !! currentLevel game) (findEntity game id (levels game !! currentLevel game)))
 
-removeEntityFromLevel' :: Level -> ID -> Level
-removeEntityFromLevel' level id = level {entities = [it | it <- Datastructures.entities level, eid it /= idtoString  id]}
+removeEntityFromLevel' :: Level -> Entity -> Level
+removeEntityFromLevel' level entity = level {entities = [it | it <- Datastructures.entities level, it /= entity]}
 
 addEntityToLevel :: Entity -> Game -> Game
 addEntityToLevel entity game = game {levels = replaceNth (levels game) (currentLevel game) (addEntityToLevel' entity (levels game !! currentLevel game))}
@@ -91,7 +92,7 @@ isDoorOpen (x, y) level
   | ex (head door) == (x - 1) && ey (head door) == (y - 1) && isNothing (evalue (head door)) = False
   | otherwise = True
   where
-    door = findEntity' "door" level
+    door = findEntity' (ID "door") level
 
 outOfRange:: (Int,Int) -> Level -> Bool
 outOfRange loc level = not (isLocInRangeItems loc (Datastructures.items level) || isLocInRangeEntities loc (Datastructures.entities level))
