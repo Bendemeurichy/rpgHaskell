@@ -50,7 +50,8 @@ renderplayer player | playerdirection player == Datastructures.Left = translate 
                     |otherwise = translate (convertx (px player + 1)) (converty (py player + 1)) (scale scaleSize scaleSize (lookupPicture characterMap "player"))
 
 renderTile :: Tile -> Picture
-renderTile tile = scale scaleSurface scaleSurface (lookupTile levelMap tile)
+renderTile tile | tile == Empty = blank
+                | otherwise = scale scaleSurface scaleSurface (lookupTile levelMap tile)
 
 renderTileLine :: TileLine -> Int -> Picture
 renderTileLine (TileLine tiles) y = pictures [translate  (convertx i) (converty y) (renderTile (tiles !! i)) | i <- [0..length tiles - 1]]

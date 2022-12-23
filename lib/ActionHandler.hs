@@ -28,7 +28,7 @@ leave game player level | isValidStep (px player + 2, py player+1) (layout level
 useItem:: Game -> ID -> Game
 useItem game entityid = if isNothing (evalue entity) then addEntityToLevel entity {evalue=Just 0} (useItem' game entityid) else game
                       where entity = findEntity game entityid (levels game !! currentLevel game)
-                            
+
 
 inventoryContains ::Player-> ID -> Bool
 inventoryContains player id = pinventory player `contains` id
@@ -53,7 +53,7 @@ applyFunction game func | functionName func == ID "leave" = game {player = leave
                         | functionName func == ID "increasePlayerHp" = game {player = increasePlayerHp game(player game) (argumentToId (head (arguments func)))}
                         | functionName func == ID "decreasePlayerHp" = game {player = decreasePlayerHp game (player game) (argumentToId (head (arguments func))) (levels game !! currentLevel game)}
                         | functionName func == ID "decreaseHp" = game {player =removeItemFromInventoryIfNecessary game (player game) (argumentToId (head(tail (arguments func)))) ,
-                                                                        levels = replaceNth (levels game) (currentLevel game) (levels game !! currentLevel game){entities = [decreaseHp game (argumentToId (head (arguments func))) (argumentToId (head (tail (arguments func)))) (levels game !! currentLevel game) (player game)]}}
+                                                                        levels = replaceNth (levels game) (currentLevel game) (levels game !! currentLevel game){entities = decreaseHp game (argumentToId (head (arguments func))) (argumentToId (head (tail (arguments func)))) (levels game !! currentLevel game) (player game) : [e | e <- entities (levels game !! currentLevel game), e /= findEntity game (argumentToId (head (arguments func))) (levels game !! currentLevel game)]}}
                         | functionName func == ID "retrieveItem" = retrieveItem game (argumentToId (head (arguments func))) (levels game !! currentLevel game)
                         | functionName func == ID "useItem" = useItem (game {player = removeItemFromInventoryIfNecessary game (player game) (argumentToId (head (arguments func)))}) (ID "door")
                         | otherwise = game
@@ -107,7 +107,7 @@ removeEntityFromLevel :: Game -> ID -> [Level]
 removeEntityFromLevel game id = replaceNth (levels game) (currentLevel game) (removeEntityFromLevel' (levels game !! currentLevel game) (findEntity game id (levels game !! currentLevel game)))
 
 removeEntityFromLevel' :: Level -> Entity -> Level
-removeEntityFromLevel' level entity = level {entities = [it | it <- Datastructures.entities level, it /= entity]}
+removeEntityFromLevel' level entity = level {entities = [it | it <- Datastructures.entities level, ename it /= ename entity]}
 
 addEntityToLevel :: Entity -> Game -> Game
 addEntityToLevel entity game = game {levels = replaceNth (levels game) (currentLevel game) (addEntityToLevel' entity (levels game !! currentLevel game))}

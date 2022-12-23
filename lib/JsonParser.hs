@@ -17,7 +17,7 @@ parseLevel = Object <$> (whitespace *> many1 parsePair <* whitespace)
 
 parseString :: Parser JSON
 parseString =
-  String <$> (char '"' *> many1 (letter <|> space) <* char '"')
+  String <$> (char '"' *> many1 (alphaNum <|> space) <* char '"')
 
 parseNumber :: Parser JSON
 parseNumber = Number . read <$> many1 digit <* whitespace

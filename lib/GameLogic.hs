@@ -7,7 +7,7 @@ import ActionHandler
 import FileHandler (restartLevel)
 import StartAndEnd
 import qualified Data.Maybe
-import Data.Maybe (fromJust)
+import Data.Maybe (fromJust, isNothing)
 
 --------------------------------------------------------------------------------
 -- module to handle the game logic
@@ -36,6 +36,10 @@ handleGameInput ev game | isKey 'w' ev = move game Datastructures.Up
 
 
 -- restart file if dead or go to next level / end game if on ending tile
+
+gameChecks :: Game -> Game
+gameChecks game = ifEndingTile (restartIfDead game)
+
 restartIfDead :: Game -> Game
 restartIfDead game | php (player game) <=0 = restartLevel game
                    | otherwise = game
@@ -50,15 +54,12 @@ ifEndingTile game | isEndingTile (px (player game), py (player game)) (layout (l
 enemyTurn :: Game -> Game
 enemyTurn game = enemiesDamage (dissapearIfDead game)
 
-gameChecks :: Game -> Game
-gameChecks game = ifEndingTile (restartIfDead game)
-
 enemiesDamage :: Game -> Game
-enemiesDamage game = foldl dealDamage game (entities (levels game !! currentLevel game))
+enemiesDamage game = (foldl dealDamage game (entities (levels game !! currentLevel game))){damageTicks = damageTicks game +1}
 
 dealDamage :: Game -> Entity -> Game
-dealDamage game entity | playerInEntityRange game entity && Data.Maybe.isJust (evalue entity) && damageTicks game `mod` 60 == 0 = game {player = decreasePlayerHp game (player game) (ID (eid entity)) (levels game !! currentLevel game),damageTicks = damageTicks game +1}
-                       | otherwise = game{damageTicks = damageTicks game +1}
+dealDamage game entity | playerInEntityRange game entity && Data.Maybe.isJust (evalue entity) && damageTicks game `mod` 60 == 0 = game {player = decreasePlayerHp game (player game) (ID (eid entity)) (levels game !! currentLevel game),damageTicks = 1}
+                       | otherwise = game
 
 dissapearIfDead :: Game -> Game
 dissapearIfDead game = foldl dissapear game (entities (levels game !! currentLevel game))
@@ -69,7 +70,8 @@ dissapear game entity | shouldDissapear game entity = game{levels = removeEntity
 
 
 shouldDissapear :: Game -> Entity -> Bool
-shouldDissapear game entity | Data.Maybe.isJust (ehp  entity) && fromJust (ehp entity) <= 0 = True
+shouldDissapear game entity | isNothing (ehp entity) = False
+                            | ehp entity <= Just 0 = True
                             | otherwise = False
 
 -- functions to move the player and check if the player can move
