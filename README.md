@@ -87,7 +87,7 @@ Deze zijn dan achteraf gecombineerd via de monad transformer `<|>`. Deze is ook 
 
 *demo bestand is beschikbaar als demo-level.mp4 indien niet beschikbaar*
 ![demo](demo-level.mp4 "bestand is beschikbaar in map indien niet zichtbaar")
-
+https://user-images.githubusercontent.com/48103261/209378316-3eab48f8-6e26-4926-9e82-edaa9075791b.mp4
 Zoals duidelijk is van de video wordt het aangepaste level ingeladen na het selecteren in het startscherm. Het speler karakter wordt op de juiste starttegel geplaatst.
 De acties worden correct gedetecteerd indien de conditie waar is. 
 Er kunnen items opgenomen worden en deze kunnen worden gebruikt (de sleutel op de deur en zwaard op enemy,...)
@@ -120,7 +120,11 @@ Soms zijn er wel wat vreemde keuzes gemaakt die later problemen opleverden, zoal
 De layout van een level zit echter op een coordinatensysteem waar de muren meetellen als vakje wat voor redelijk wat +1 en -1 zorgt in bepaalde functies.
 
 Voor het renderen zijn vrij veel hardgecodeerde variabelen gebruikt omdat dit anders voor een gigantische hoeveelheid aan variabelen zou zorgen, dit zou misschien opgelost kunnen worden door mijn translaties en schalingen te berekenen aan de hand van de schermgrootte.
-Dit is echter vrij ingewikkeld en niet echt doenbaar op de beperkte tijd die we nog hadden door de combinatie met andere projecten.
+Dit is echter vrij ingewikkeld en niet echt doenbaar 
+
+
+
+op de beperkte tijd die we nog hadden door de combinatie met andere projecten.
 
 <u>Gebruikte bronnen:</u>
 Voorbeeld voor JSON-parser: [Adrians blog](https://www.adrians-blog.com/2020/12/08/building-a-json-parser-in-20-lines-of-code-haskell-parsec/)
