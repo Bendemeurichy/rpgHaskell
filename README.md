@@ -86,8 +86,11 @@ Deze zijn dan achteraf gecombineerd via de monad transformer `<|>`. Deze is ook 
 #### <u>__Overzicht functionaliteit met voorbeeld__</u>
 
 *demo bestand is beschikbaar als demo-level.mp4 indien niet beschikbaar*
+
 ![demo](demo-level.mp4 "bestand is beschikbaar in map indien niet zichtbaar")
+
 https://user-images.githubusercontent.com/48103261/209378316-3eab48f8-6e26-4926-9e82-edaa9075791b.mp4
+
 Zoals duidelijk is van de video wordt het aangepaste level ingeladen na het selecteren in het startscherm. Het speler karakter wordt op de juiste starttegel geplaatst.
 De acties worden correct gedetecteerd indien de conditie waar is. 
 Er kunnen items opgenomen worden en deze kunnen worden gebruikt (de sleutel op de deur en zwaard op enemy,...)
