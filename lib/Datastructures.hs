@@ -1,5 +1,9 @@
 module Datastructures where
 
+--------------------------------------------------------------------------------
+--module to define all datastructures used in the game + parser
+--------------------------------------------------------------------------------
+
 
 data JSON
     = Number Int
@@ -17,55 +21,6 @@ newtype ID = ID String
 
 data Pair = Pair ID JSON
     deriving (Show, Eq)
-
-jsonToInt :: JSON -> Int
-jsonToInt (Number a) = a
-
-jsonToString :: JSON -> String
-jsonToString (String a) = a
-
-jsonToActions :: JSON -> [Action]
-jsonToActions (Actions a) = a
-
-jsonToArray :: JSON -> [JSON]
-jsonToArray (Array a) = a
-
-jsonToObject :: JSON -> [Pair]
-jsonToObject (Object a) = a
-
-jsonToLayout :: JSON -> [TileLine]
-jsonToLayout (Layout a) = a
-
-jsonToUseTimes :: JSON -> UseTimes
-jsonToUseTimes (UseTimes a) = a
-
-jsonToDirection :: JSON -> Direction
-jsonToDirection (Direction a) = a
-
-amountToInt :: UseTimes -> Int
-amountToInt (Amount a) = a
-
-tilelinetoTiles :: TileLine -> [Tile]
-tilelinetoTiles (TileLine a) = a
-
-argumentToId :: Argument -> ID
-argumentToId (TargetID a) = a
-
-argumentToFunction :: Argument -> Function
-argumentToFunction (ArgumentFunction a) = a
-
-
-idtoString :: ID -> String
-idtoString (ID a) = a
-
-sndp :: Pair -> JSON
-sndp (Pair _ b) = b
-
-fstp :: Pair -> ID
-fstp (Pair a _) = a
-
-lengthTileLine :: TileLine -> Int
-lengthTileLine (TileLine a) = length a
 
 data TileLine = TileLine [Tile]
     deriving (Show, Eq)
@@ -145,3 +100,53 @@ data Status = Levelselection | Playing | Won | Lost deriving (Show, Eq)
 data Selector = Selector {selected :: Int} deriving (Show, Eq)
 
 data SelectionScreen = SelectionScreen {selector :: Selector, levelfiles :: [String]} deriving (Show, Eq)
+
+--helper functions co convert datastructures to other types
+
+jsonToInt :: JSON -> Int
+jsonToInt (Number a) = a
+
+jsonToString :: JSON -> String
+jsonToString (String a) = a
+
+jsonToActions :: JSON -> [Action]
+jsonToActions (Actions a) = a
+
+jsonToArray :: JSON -> [JSON]
+jsonToArray (Array a) = a
+
+jsonToObject :: JSON -> [Pair]
+jsonToObject (Object a) = a
+
+jsonToLayout :: JSON -> [TileLine]
+jsonToLayout (Layout a) = a
+
+jsonToUseTimes :: JSON -> UseTimes
+jsonToUseTimes (UseTimes a) = a
+
+jsonToDirection :: JSON -> Direction
+jsonToDirection (Direction a) = a
+
+amountToInt :: UseTimes -> Int
+amountToInt (Amount a) = a
+
+tilelinetoTiles :: TileLine -> [Tile]
+tilelinetoTiles (TileLine a) = a
+
+argumentToId :: Argument -> ID
+argumentToId (TargetID a) = a
+
+argumentToFunction :: Argument -> Function
+argumentToFunction (ArgumentFunction a) = a
+
+idtoString :: ID -> String
+idtoString (ID a) = a
+
+sndp :: Pair -> JSON
+sndp (Pair _ b) = b
+
+fstp :: Pair -> ID
+fstp (Pair a _) = a
+
+lengthTileLine :: TileLine -> Int
+lengthTileLine (TileLine a) = length a

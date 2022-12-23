@@ -13,7 +13,13 @@ import ActionHandler
 import AssetPictures
 import StartAndEnd
 
---functions to render the game correctly
+--------------------------------------------------------------------------------
+--module to handle the rendering of the game
+--------------------------------------------------------------------------------
+
+
+
+--functions to handle the gloss window
 windowposition :: (Int, Int)
 windowposition = (150, 0)
 
@@ -31,6 +37,10 @@ render game | status game == Levelselection = renderStart game
             | status game == Playing = renderPlaying game
             | status game == Won = renderEnding game
 
+
+-- render the game while playing--
+
+--render the correct level and the player
 renderPlaying :: Game -> Picture
 renderPlaying game = pictures [renderBackground,renderLayout (layout (levels game!! currentLevel game)),renderItems (items (levels game !! currentLevel game)) ,
     renderEntities (entities (levels game !! currentLevel game)), renderUI game,renderplayer (player game)]
@@ -78,6 +88,8 @@ lookupDoor entity | isNothing (evalue entity) = lookupPicture characterMap "door
 renderUI :: Game -> Picture
 renderUI game = pictures [renderActionsfield game, renderInventory (player game)]
 
+-- render the actionbar and the actions
+
 renderActionsfield :: Game -> Picture
 renderActionsfield game = pictures [renderActionbar , renderActions game,renderMovementPrompt]
 
@@ -92,6 +104,8 @@ renderAction act i  | functionName (action act) == ID "decreaseHp" = translate 0
 
 renderActionbar :: Picture
 renderActionbar = translate (-400.0) 0.0 (scale 9.4 15.0 (rotate 180.0 (lookupPicture gameUiMap "actionbar")))
+
+-- render inventory
 
 renderInventory :: Player -> Picture
 renderInventory player = pictures [renderInventoryBox,renderHearts player,renderInventorySlots,renderInventoryContents player]
@@ -120,6 +134,8 @@ renderHeart heart | heart == "full" = lookupPicture gameUiMap "heartFull"
                 |heart == "half" = lookupPicture gameUiMap "heartHalf"
                 | otherwise = lookupPicture gameUiMap "heartEmpty"
 
+--render extrar ui
+
 renderMovementPrompt :: Picture
 renderMovementPrompt = pictures [renderW,renderS,renderA,renderD]
 
@@ -136,7 +152,7 @@ renderD :: Picture
 renderD = translate (-340.0) (-220.0) (scale 0.6 0.6 (lookupPicture inputMap "d"))
 
 
-
+--convert the coordinates of the tiles to the coordinates of the window
 
 convertx :: Int -> Float
 convertx x = fromIntegral x * 40.0 + 75.0
@@ -147,15 +163,17 @@ converty y = fromIntegral y * 40.0
 convertxItems :: Int -> Float
 convertxItems x = (fromIntegral x * 80.0) - 100.0
 
-
 convertxHp :: Int -> Float
 convertxHp x = fromIntegral x * 40.0 -100.0
 
 convertyActions :: Int -> Float
 convertyActions y = - fromIntegral y * 40.0 +250.0
 
+
+--scale the tiles
 scaleSurface :: Float
 scaleSurface = 2.0
 
+--scale the items and characters
 scaleSize :: Float
 scaleSize = 1.3

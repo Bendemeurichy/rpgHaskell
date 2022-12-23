@@ -9,34 +9,17 @@ import StartAndEnd
 import qualified Data.Maybe
 import Data.Maybe (fromJust)
 
+--------------------------------------------------------------------------------
+-- module to handle the game logic
+--------------------------------------------------------------------------------
+
+--handle enemyturn and check if game is won or lost
 update :: Float -> Game -> Game
 update _ game | status game == Levelselection = game 
                | status game ==Playing = enemyTurn (gameChecks game)
                | otherwise = game
 
---bestaat using namespace Datastructures of iets gelijkaardig ??
-moveDirection :: Direction -> (Int, Int)
-moveDirection dir | dir == Datastructures.Up = (0, 1)
-                  | dir == Datastructures.Down = (0, -1)
-                  | dir == Datastructures.Left = (-1, 0)
-                  | dir == Datastructures.Right = (1, 0)
-
-canmove :: Game -> Direction -> Bool
-canmove game dir | isValidStep (Data.Bifunctor.bimap
-   ((px (player game)+1) +) ((py (player game)+1) +)
-   (moveDirection dir)) (layout (levels game !! currentLevel game)) game= True
-                 | otherwise = False
-
-move :: Game -> Direction -> Game
-move game dir | canmove game dir = game {player =changeDirection (changePlayerPosition (player game) (Data.Bifunctor.bimap (px (player game) +) (py (player game) +) (moveDirection dir))) dir}
-              | otherwise = game
-
-changeDirection :: Player -> Direction -> Player
-changeDirection player dir | dir == Datastructures.Left = player {playerdirection = Datastructures.Left}
-                           | dir == Datastructures.Right = player {playerdirection = Datastructures.Right}
-                           | otherwise = player
-
-
+--handle input
 handleInput :: Event -> Game -> Game
 handleInput ev game | status game == Levelselection = handleLevelSelectionInput ev game
                   | status game == Datastructures.Playing = handleGameInput ev game
@@ -51,6 +34,8 @@ handleGameInput ev game | isKey 'w' ev = move game Datastructures.Up
                     | isNumber ev && read (getNumber ev)<length (detectActions  game) = applyFunction game (action (detectActions game !!(read (getNumber ev) :: Int)))
                     | otherwise = game
 
+
+-- restart file if dead or go to next level / end game if on ending tile
 restartIfDead :: Game -> Game
 restartIfDead game | php (player game) <=0 = restartLevel game
                    | otherwise = game
@@ -59,6 +44,8 @@ ifEndingTile :: Game -> Game
 ifEndingTile game | isEndingTile (px (player game), py (player game)) (layout (levels game !! currentLevel game)) && currentLevel game == length (levels game) -1  = game {status = Won}
                   | isEndingTile (px (player game), py (player game)) (layout (levels game !! currentLevel game)) = changePlayerInGame (game {currentLevel = currentLevel game +1}) (findStart (layout (levels game !! (currentLevel game +1))))
                   | otherwise = game
+
+-- handle the enemy turn, check if the player is in range of an enemy and if so, deal damage
 
 enemyTurn :: Game -> Game
 enemyTurn game = enemiesDamage (dissapearIfDead game)
@@ -84,3 +71,37 @@ dissapear game entity | shouldDissapear game entity = game{levels = removeEntity
 shouldDissapear :: Game -> Entity -> Bool
 shouldDissapear game entity | Data.Maybe.isJust (ehp  entity) && fromJust (ehp entity) <= 0 = True
                             | otherwise = False
+
+-- functions to move the player and check if the player can move
+
+-- bestaat using namespace Datastructures of iets gelijkaardig ??
+moveDirection :: Direction -> (Int, Int)
+moveDirection dir
+  | dir == Datastructures.Up = (0, 1)
+  | dir == Datastructures.Down = (0, -1)
+  | dir == Datastructures.Left = (-1, 0)
+  | dir == Datastructures.Right = (1, 0)
+
+canmove :: Game -> Direction -> Bool
+canmove game dir
+  | isValidStep
+      ( Data.Bifunctor.bimap
+          ((px (player game) + 1) +)
+          ((py (player game) + 1) +)
+          (moveDirection dir)
+      )
+      (layout (levels game !! currentLevel game))
+      game =
+      True
+  | otherwise = False
+
+move :: Game -> Direction -> Game
+move game dir
+  | canmove game dir = game {player = changeDirection (changePlayerPosition (player game) (Data.Bifunctor.bimap (px (player game) +) (py (player game) +) (moveDirection dir))) dir}
+  | otherwise = game
+
+changeDirection :: Player -> Direction -> Player
+changeDirection player dir
+  | dir == Datastructures.Left = player {playerdirection = Datastructures.Left}
+  | dir == Datastructures.Right = player {playerdirection = Datastructures.Right}
+  | otherwise = player

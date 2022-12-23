@@ -6,6 +6,12 @@ import ActionHandler
 import Data.Maybe (isNothing)
 import Data.List
 
+--------------------------------------------------------------------------------
+-- module with helper functions for all other modules
+--------------------------------------------------------------------------------
+
+-- functions to find coordinates of tiles in a level (ending and start)
+
 findStart :: [TileLine] -> (Int, Int)
 findStart tileLines = findCoordinate tileLines Start
 
@@ -23,14 +29,20 @@ isEndingTile (x,y) tileLines | x == fst ending && y == snd ending = True
 tiles :: TileLine -> [Tile]
 tiles (TileLine a) = a
 
+-- change location of player in game
+
 changePlayerPosition :: Player -> (Int, Int) -> Player
 changePlayerPosition player (x,y) = player {px = x, py = y}
 
 changePlayerInGame :: Game -> (Int, Int) -> Game
 changePlayerInGame game (x,y) = game {player = changePlayerPosition (player game) (x,y)}
 
+
+-- calculate health to convert to visual healthbar
 calculateHealth :: Player -> [String]
 calculateHealth player =[ "full" |i<-[1..(php player `div` 10)]] ++ (["half" | php player `mod` 10 == 5])
+
+-- detect action if condition is met
 
 detectAllActions :: Game -> [Action]
 detectAllActions game = concat [  eactions ent| ent <- detectEntities game] ++ concat [actions item | item <- detectItems game]
@@ -42,7 +54,7 @@ checkCondition :: Game -> [Function] -> Bool
 checkCondition game conditions | null conditions = True
                             |otherwise = conditionTrue game (head conditions) && checkCondition game (tail conditions )
 
-
+--detect if there are entities or items in range of the player
 detectEntities :: Game -> [Entity]
 detectEntities game = [ent | ent <- entities (levels game !! currentLevel game) , detectCoordinates (px (player game), py (player game)) (ex ent, ey ent)]
 

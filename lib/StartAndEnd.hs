@@ -7,7 +7,11 @@ import HelperFunctions
 import FileHandler (startLevel)
 import AssetPictures
 
+--------------------------------------------------------------------------------
+--module to handle the start and end screens + visuals for these 2 screens
+--------------------------------------------------------------------------------
 
+--change the status of the game to the correct one
 toPlaying :: Game -> Game
 toPlaying game = game {status = Playing}
 
@@ -17,6 +21,8 @@ toEnding game = game {status = Won}
 toLevelSelection :: Game -> Game
 toLevelSelection game = game {status = Levelselection, currentLevel = 0}
 
+
+--handle input for the start and end screens
 handleLevelSelectionInput :: Event -> Game -> Game
 handleLevelSelectionInput ev game | isKey 'w' ev = moveSelector game Datastructures.Up
                                   | isKey 's' ev = moveSelector game Datastructures.Down
@@ -27,6 +33,7 @@ handleEndingInput :: Event -> Game -> Game
 handleEndingInput ev game | isSpecialKey KeyEnter ev = toLevelSelection game
                           | otherwise = game
 
+--selector movement for startscreen
 moveSelector :: Game -> Direction -> Game
 moveSelector game dir | canmoveSelector game dir && dir == Datastructures.Up = game { selectionScreen = decreaseSelector screen}
                       | canmoveSelector game dir && dir == Datastructures.Down = game { selectionScreen = increaseSelector screen}
@@ -45,14 +52,15 @@ increaseSelector screen = screen {selector = (selector screen) {selected = selec
 decreaseSelector :: SelectionScreen -> SelectionScreen
 decreaseSelector screen = screen {selector = (selector screen) {selected = selected (selector screen) -1}}
 
+--start the game if enter is pressed
 initiateGame :: Game -> Game
 initiateGame game = startLevel (getSelectedLevel game) (toPlaying game)
 
 getSelectedLevel :: Game -> String
 getSelectedLevel game = levelfiles (selectionScreen game) !! selected (selector (selectionScreen game))
 
-convertLevelPosition :: Int -> Float
-convertLevelPosition pos = - fromIntegral (pos * 110) +140.0
+
+--rendering for the start and end screens
 
 renderLevelBars :: SelectionScreen -> Picture
 renderLevelBars screen =pictures [ renderLevelBar pos | pos <- [0..length (levelfiles screen) -1]]
@@ -107,3 +115,7 @@ renderReturnText = color white (translate (-280) (-270) (scale 0.4 0.4(text "Ret
 
 renderEndingEnterPrompt :: Picture
 renderEndingEnterPrompt = translate (-300) (-250 )(scale 0.7 0.7 (lookupPicture inputMap "enter"))
+
+--convert the level position to a correct position on the screen
+convertLevelPosition :: Int -> Float
+convertLevelPosition pos = -fromIntegral (pos * 110) + 140.0

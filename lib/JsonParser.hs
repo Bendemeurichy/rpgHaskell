@@ -5,6 +5,11 @@ import Text.Parsec.String (Parser)
 import qualified Datastructures as Actions
 -- help for parsec: https://jakewheat.github.io/intro_to_parsing/
 
+--------------------------------------------------------------------------------
+--module to parse config files using parsec
+--------------------------------------------------------------------------------
+
+
 --basics
 
 parseLevel :: Parser JSON

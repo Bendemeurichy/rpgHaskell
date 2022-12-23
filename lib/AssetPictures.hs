@@ -5,6 +5,11 @@ import Graphics.Gloss.Interface.IO.Game
 import Data.Maybe
 import GHC.IO
 import Graphics.Gloss.Juicy
+
+--------------------------------------------------------------------------------
+--module to load pictures from files and map them to names
+--------------------------------------------------------------------------------
+
 -- maps of txt names to gloss pictures
 
 characterMap :: [(String, Picture)]

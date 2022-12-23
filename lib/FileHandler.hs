@@ -13,6 +13,13 @@ import System.Posix.Internals (withFilePath)
 import HelperFunctions
 import Data.List (sort)
 
+------------------------------------------------------------------------------------------------------------------------
+-- module to read files and initialize games and levels
+------------------------------------------------------------------------------------------------------------------------
+
+
+-- functions to load levels from files and initialize the game
+
 constructLevel :: String -> Game -> IO Game
 constructLevel levelname game = do
     file <- readFile ("levels/" ++ levelname ++ ".txt")
@@ -43,6 +50,8 @@ startLevel levelname game = (changePlayerInGame constructedgame (findStart  (lay
 
 restartLevel :: Game -> Game
 restartLevel game= startLevel (levelName game) game
+
+-- functions to convert JSON to game datastructures
 
 findMaybePair :: ID -> [Pair] -> Maybe Pair
 findMaybePair _ [] = Nothing
@@ -101,6 +110,8 @@ constructEntityFromJSON (Object entity) = Entity{ eid = jsonToString (sndp (find
                                        }
 
 
+--initial values for a game and its components
+
 initGame = Game{
     levelName ="",
     player =initPlayer,
@@ -133,6 +144,8 @@ initSelectionScreen = SelectionScreen {selector = initSelector, levelfiles = ini
 
 initLevelfiles :: [String]
 initLevelfiles = sort findLevelFiles
+
+-- functions to detect all files in the level folder
 
 findLevelFiles :: [String]
 {-# NOINLINE findLevelFiles #-}
