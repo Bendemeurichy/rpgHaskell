@@ -3,10 +3,12 @@ import Test.Hspec
 import JsonParser
 import Datastructures
 import FileHandler
-import HelperFunctions (findStart, calculateHealth, getNumber, detectItems)
+import HelperFunctions (findStart, calculateHealth, getNumber, detectItems, changePlayerInGame)
 import Graphics.Gloss.Interface.IO.Game (Event(EventKey))
 import Graphics.Gloss.Interface.IO.Interact
 import ActionHandler (inventoryContains)
+import GameLogic (canmove)
+import Text.Parsec
 
 main :: IO ()
 main = hspec $ do
@@ -30,3 +32,19 @@ main = hspec $ do
     it "inventory is empty after reading from file2" $ do
         let cgame = startLevel "level2" initGame
         inventoryContains (player cgame) (ID "dagger") `shouldBe` False
+    
+    it "can't move to wall" $ do
+        let cgame = startLevel "level2" initGame
+        let cplayer = player cgame
+        let moved = canmove cgame Datastructures.Left
+        moved `shouldBe` False
+
+    it "can move to empty space" $ do
+        let cgame = startLevel "level2" initGame
+        let cplayer = player cgame
+        let moved = canmove cgame Datastructures.Up
+        moved `shouldBe` True
+    
+    it "parseJson works correctly" $ do
+        let parsed = parse parseJSON "" "direction: left,"
+        show parsed `shouldBe` "Right (Object [Pair (ID \"direction\") (Direction Left)])"
